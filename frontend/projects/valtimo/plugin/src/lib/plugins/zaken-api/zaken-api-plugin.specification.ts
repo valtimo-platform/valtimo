@@ -35,6 +35,7 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {GetZaakeigenschappenComponent} from './components/get-zaakeigenschappen/get-zaakeigenschappen.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
@@ -68,6 +69,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaakeigenschap': CreateZaakeigenschapComponent,
     'update-zaakeigenschap': UpdateZaakeigenschapComponent,
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
+    'get-zaakeigenschappen': GetZaakeigenschappenComponent,
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
@@ -145,8 +147,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-zaakeigenschap': 'Zaakeigenschap aanmaken',
       'update-zaakeigenschap': 'Zaakeigenschap bijwerken',
       'delete-zaakeigenschap': 'Zaakeigenschap verwijderen',
+      'get-zaakeigenschappen': 'Zaakeigenschappen zoeken',
       eigenschapUrl: 'Eigenschap-URL',
       eigenschapUrlTooltip: 'URL-referentie naar de eigenschap.',
+      eigenschapNaam: 'Eigenschapnaam',
+      eigenschapNaamTooltip: 'De naam van de eigenschap om op te zoeken.',
       eigenschapValue: 'Eigenschapswaarde',
       eigenschapValueTooltip: 'De waarde van de zaakeigenschap',
       eigenschapUrlSelect: 'Eigenschap',
@@ -414,8 +419,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-zaakeigenschap': 'Create zaakeigenschap',
       'update-zaakeigenschap': 'Update zaakeigenschap',
       'delete-zaakeigenschap': 'Delete zaakeigenschap',
+      'get-zaakeigenschappen': 'Search zaakeigenschappen',
       eigenschapUrl: 'Property URL',
       eigenschapUrlTooltip: 'URL reference to the eigenschap.',
+      eigenschapNaam: 'Property name',
+      eigenschapNaamTooltip: 'The name of the property to search for.',
       eigenschapValue: 'Eigenschap value',
       eigenschapValueTooltip: 'The value of the zaakeigenschap',
       eigenschapUrlSelect: 'Eigenschap',

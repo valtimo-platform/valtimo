@@ -1,0 +1,86 @@
+[
+    {
+        "activityId": "zaakeigenschap-zoeken-st",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "get-zaakeigenschappen",
+        "actionProperties": {
+            "eigenschapUrl": "pv:eigenschapUrl",
+            "eigenschapNaam": "pv:eigenschapNaam",
+            "resultProcessVariable": "pv:resultProcessVariable"
+        },
+        "processLinkType": "plugin"
+    },
+    {
+        "activityId": "haal-eigenschappen-van-zaaktype-op-st",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
+        "pluginActionDefinitionKey": "get-all-zaaktype-eigenschappen-from-zaaktype",
+        "actionProperties": {
+            "processVariable": "zaaktypeEigenschappen"
+        },
+        "processLinkType": "plugin"
+    },
+    {
+        "activityId": "zaakeigenschap-get-st",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "get-zaakeigenschappen",
+        "actionProperties": {
+            "eigenschapUrl": "pv:eigenschapUrl",
+            "resultProcessVariable": "pv:resultProcessVariable"
+        },
+        "processLinkType": "plugin"
+    },
+    {
+        "activityId": "zaakeigenschap-creeer-st",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "create-zaakeigenschap",
+        "actionProperties": {
+            "eigenschapUrl": "pv:eigenschapUrl",
+            "eigenschapValue": "pv:eigenschapValue"
+        },
+        "processLinkType": "plugin"
+    },
+    {
+        "formDisplayType": "panel",
+        "activityId": "zaakeigenschap-creeer",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "zaakeigenschap-creeer",
+        "viewModelEnabled": false,
+        "formSize": "medium",
+        "subtitles": [],
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "zaakeigenschap-zoek",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "zaakeigenschap-zoek",
+        "viewModelEnabled": false,
+        "formDisplayType": "panel",
+        "formSize": "medium",
+        "subtitles": [],
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "zaakeigenschap-toon-resultaat",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "zaakeigenschap-toon-resultaat",
+        "viewModelEnabled": false,
+        "formSize": "medium",
+        "subtitles": [],
+        "processLinkType": "form",
+        "formDisplayType": "panel"
+    },
+    {
+        "activityId": "zaakeigenschap-actie",
+        "activityType": "bpmn:StartEvent:start",
+        "formDefinitionName": "zaakeigenschap-actie",
+        "viewModelEnabled": false,
+        "formDisplayType": "panel",
+        "formSize": "medium",
+        "subtitles": null,
+        "processLinkType": "form"
+    }
+]

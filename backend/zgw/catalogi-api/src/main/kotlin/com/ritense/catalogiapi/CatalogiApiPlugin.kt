@@ -23,6 +23,7 @@ import com.ritense.catalogiapi.client.EigenschapRequest
 import com.ritense.catalogiapi.client.ResultaattypeRequest
 import com.ritense.catalogiapi.client.RoltypeRequest
 import com.ritense.catalogiapi.client.StatustypeRequest
+import com.ritense.catalogiapi.client.ZaakTypePublishedStatus
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.client.ZaaktypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
@@ -246,6 +247,59 @@ class CatalogiApiPlugin(
             execution.setVariable(processVariable, eigenschapUrl)
         }
     }
+
+    @PluginAction(
+        key = "get-all-zaaktype-eigenschappen-from-zaaktype",
+        title = "Get Eigenschappen from zaaktype",
+        description = "Retrieve a single page of eigenschappen from zaaktype and save these in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getEigenschappenFromZaaktype(
+        execution: DelegateExecution,
+        @PluginActionProperty processVariable: String,
+        @PluginActionProperty zaaktypeIdentificatie: String? = null,
+        @PluginActionProperty datumGeldigheid: LocalDate? = null,
+        @PluginActionProperty status: String? = null,
+        @PluginActionProperty pageSize: Int? = null,
+        @PluginActionProperty page: Int? = null,
+    ) {
+        val zaaktypeUrl = getZaaktypeUrl(execution)
+        logger.debug { "Retrieving eigenschappen and storing these in process variable: $processVariable" }
+        withLoggingContext(
+            CATALOGI_API.EIGENSCHAP to zaaktypeUrl.toString()
+        ) {
+            client.getEigenschappen(
+                authenticationPluginConfiguration,
+                url,
+                EigenschapRequest(
+                    zaaktype = zaaktypeUrl,
+                    zaaktypeIdentificatie = zaaktypeIdentificatie,
+                    datumGeldigheid = datumGeldigheid,
+                    status = status?.let { ZaakTypePublishedStatus.valueOf(it.uppercase()) },
+                    pageSize = pageSize,
+                    page = page,
+                )
+            ).results.map { eigenschap ->
+                eigenschapToMap(eigenschap)
+            }.let { eigenschappen ->
+                execution.setVariable(processVariable, eigenschappen)
+            }
+            logger.info { "Setting process variable $processVariable with (retrieved) eigenschappen" }
+        }
+    }
+
+    private fun eigenschapToMap(eigenschap: Eigenschap): Map<String, Any?> = mapOf(
+        URL_KEY to eigenschap.url?.toASCIIString(),
+        NAME_KEY to eigenschap.naam,
+        DEFINITIE_KEY to eigenschap.definitie,
+        TOELICHTING_KEY to eigenschap.toelichting,
+        ZAAKTYPE_KEY to eigenschap.zaaktype.toASCIIString(),
+        GROEP_KEY to eigenschap.specificatie.groep,
+        FORMAAT_KEY to eigenschap.specificatie.formaat,
+        LENGTE_KEY to eigenschap.specificatie.lengte,
+        KARDINALITEIT_KEY to eigenschap.specificatie.kardinaliteit,
+        WAARDENVERZAMELING_KEY to eigenschap.specificatie.waardenverzameling
+    )
 
     @PluginAction(
         key = "get-informatieobjecttype",
@@ -662,6 +716,14 @@ class CatalogiApiPlugin(
         private val HTTPS_REGEX = "https?://.+".toRegex()
         private const val NAME_KEY = "name"
         private const val URL_KEY = "url"
+        private const val DEFINITIE_KEY = "definitie"
+        private const val TOELICHTING_KEY = "toelichting"
+        private const val ZAAKTYPE_KEY = "zaaktype"
+        private const val GROEP_KEY = "groep"
+        private const val FORMAAT_KEY = "formaat"
+        private const val LENGTE_KEY = "lengte"
+        private const val KARDINALITEIT_KEY = "kardinaliteit"
+        private const val WAARDENVERZAMELING_KEY = "waardenverzameling"
 
         const val PLUGIN_KEY = "catalogiapi"
 

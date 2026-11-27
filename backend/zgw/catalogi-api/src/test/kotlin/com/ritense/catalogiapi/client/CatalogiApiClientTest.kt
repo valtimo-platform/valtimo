@@ -599,6 +599,46 @@ internal class CatalogiApiClientTest {
         assertEquals("achternaam", zaaktype.naam)
     }
 
+    @Test
+    fun `should send all eigenschappen query parameters`() {
+        val restClientBuilder = RestClient.builder()
+        val client = CatalogiApiClient(restClientBuilder, cacheManager)
+        val baseUrl = mockApi.url("api").toString()
+        val zaaktypeUrl = "$baseUrl/zaaktypen/35bbe19f-4ae8-4591-9763-273ad2675340"
+        val responseBody = """
+            {
+                "count": 0,
+                "next": null,
+                "previous": null,
+                "results": []
+            }
+        """.trimIndent()
+        mockApi.enqueue(mockResponse(responseBody))
+
+        client.getEigenschappen(
+            authentication = TestAuthentication(),
+            baseUrl = URI(baseUrl),
+            request = EigenschapRequest(
+                zaaktype = URI(zaaktypeUrl),
+                zaaktypeIdentificatie = "ZAAKTYPE-1",
+                datumGeldigheid = LocalDate.of(2026, 1, 15),
+                status = ZaakTypePublishedStatus.DEFINITIEF,
+                pageSize = 50,
+                page = 2
+            )
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+        val requestedUrl = recordedRequest.requestUrl
+
+        assertEquals(zaaktypeUrl, requestedUrl?.queryParameter("zaaktype"))
+        assertEquals("ZAAKTYPE-1", requestedUrl?.queryParameter("zaaktypeIdentificatie"))
+        assertEquals("2026-01-15", requestedUrl?.queryParameter("datumGeldigheid"))
+        assertEquals("definitief", requestedUrl?.queryParameter("status"))
+        assertEquals("50", requestedUrl?.queryParameter("pageSize"))
+        assertEquals("2", requestedUrl?.queryParameter("page"))
+    }
+
     private fun mockResponse(body: String): MockResponse {
         return MockResponse()
             .addHeader("Content-Type", "application/json")

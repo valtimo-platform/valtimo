@@ -18,7 +18,6 @@ package com.ritense.zakenapi
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
@@ -1506,6 +1505,280 @@ internal class ZakenApiPluginTest {
         assertEquals(zaakUrl, request.zaak)
         assertEquals(eigenschapUrl, request.eigenschap)
         assertEquals("test-value", request.waarde)
+    }
+
+    @Test
+    fun `should search zaakeigenschappen by eigenschapUrl`() {
+        // given
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+        val eigenschapUrl = eigenschapUri()
+        val resultProcessVariable = "zaakeigenschappen"
+
+        val matching = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/1"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUrl,
+            naam = "Status",
+            waarde = "Toegekend"
+        )
+        val other = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/2"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri("2"),
+            naam = "Overig",
+            waarde = "Andere waarde"
+        )
+
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
+            .thenReturn(listOf(matching, other))
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakeigenschappen(
+            execution = executionMock,
+            eigenschapUrl = eigenschapUrl,
+            eigenschapNaam = null,
+            resultProcessVariable = resultProcessVariable
+        )
+
+        // then
+        verify(executionMock).setVariable(
+            resultProcessVariable,
+            MapperSingleton.get().convertValue(listOf(matching), Any::class.java)
+        )
+    }
+
+    @Test
+    fun `should search zaakeigenschappen by eigenschapNaam`() {
+        // given
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+        val resultProcessVariable = "zaakeigenschappen"
+
+        val matching = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/1"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri(),
+            naam = "Status",
+            waarde = "Toegekend"
+        )
+        val other = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/2"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri("2"),
+            naam = "Overig",
+            waarde = "Andere waarde"
+        )
+
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
+            .thenReturn(listOf(matching, other))
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakeigenschappen(
+            execution = executionMock,
+            eigenschapUrl = null,
+            eigenschapNaam = "Status",
+            resultProcessVariable = resultProcessVariable
+        )
+
+        // then
+        verify(executionMock).setVariable(
+            resultProcessVariable,
+            MapperSingleton.get().convertValue(listOf(matching), Any::class.java)
+        )
+    }
+
+    @Test
+    fun `should search zaakeigenschappen by eigenschapUrl and eigenschapNaam`() {
+        // given
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+        val eigenschapUrl = eigenschapUri()
+        val resultProcessVariable = "zaakeigenschappen"
+
+        // Same eigenschap URL, different name - should not match on URL alone
+        val sameUrlDifferentName = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/1"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUrl,
+            naam = "Overig",
+            waarde = "Andere waarde"
+        )
+        // Same name, different eigenschap URL - should not match on name alone
+        val sameNameDifferentUrl = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/2"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri("2"),
+            naam = "Status",
+            waarde = "Toegekend"
+        )
+        val matching = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/3"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUrl,
+            naam = "Status",
+            waarde = "Afgewezen"
+        )
+
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
+            .thenReturn(listOf(sameUrlDifferentName, sameNameDifferentUrl, matching))
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakeigenschappen(
+            execution = executionMock,
+            eigenschapUrl = eigenschapUrl,
+            eigenschapNaam = "Status",
+            resultProcessVariable = resultProcessVariable
+        )
+
+        // then
+        verify(executionMock).setVariable(
+            resultProcessVariable,
+            MapperSingleton.get().convertValue(listOf(matching), Any::class.java)
+        )
+    }
+
+    @Test
+    fun `should search all zaakeigenschappen when no filters are given`() {
+        // given
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+        val resultProcessVariable = "zaakeigenschappen"
+
+        val first = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/1"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri(),
+            naam = "Status",
+            waarde = "Toegekend"
+        )
+        val second = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/2"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri("2"),
+            naam = "Overig",
+            waarde = "Andere waarde"
+        )
+
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
+            .thenReturn(listOf(first, second))
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakeigenschappen(
+            execution = executionMock,
+            eigenschapUrl = null,
+            eigenschapNaam = null,
+            resultProcessVariable = resultProcessVariable
+        )
+
+        // then
+        verify(executionMock).setVariable(
+            resultProcessVariable,
+            MapperSingleton.get().convertValue(listOf(first, second), Any::class.java)
+        )
+    }
+
+    @Test
+    fun `should store empty list when no zaakeigenschappen match the search`() {
+        // given
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+        val resultProcessVariable = "zaakeigenschappen"
+
+        val other = ZaakeigenschapResponse(
+            url = URI("${zaakUrl()}/zaakeigenschappen/1"),
+            zaak = zaakUrl,
+            eigenschap = eigenschapUri("2"),
+            naam = "Overig",
+            waarde = "Andere waarde"
+        )
+
+        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        whenever(executionMock.businessKey).thenReturn(documentId.toString())
+        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
+        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
+            .thenReturn(listOf(other))
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakeigenschappen(
+            execution = executionMock,
+            eigenschapUrl = eigenschapUri(),
+            eigenschapNaam = "Status",
+            resultProcessVariable = resultProcessVariable
+        )
+
+        // then
+        verify(executionMock).setVariable(
+            resultProcessVariable,
+            MapperSingleton.get().convertValue(emptyList<ZaakeigenschapResponse>(), Any::class.java)
+        )
     }
 
     @Test

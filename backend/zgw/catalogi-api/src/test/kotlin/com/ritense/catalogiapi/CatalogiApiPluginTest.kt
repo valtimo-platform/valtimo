@@ -17,7 +17,9 @@
 package com.ritense.catalogiapi
 
 import com.ritense.catalogiapi.client.CatalogiApiClient
+import com.ritense.catalogiapi.client.EigenschapRequest
 import com.ritense.catalogiapi.client.RoltypeRequest
+import com.ritense.catalogiapi.client.ZaakTypePublishedStatus
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
 import com.ritense.catalogiapi.domain.Eigenschap
@@ -1031,6 +1033,205 @@ internal class CatalogiApiPluginTest : BaseTest() {
         }
 
         assertEquals("No eigenschap was found with eigenschapnaam: 'Einddatum'", exception.message)
+    }
+
+    @Test
+    fun `should get eigenschappen with all filters applied`() {
+        // given
+        val processVariable = "eigenschappenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+        val datumGeldigheid = LocalDate.of(2026, 1, 15)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        whenever(
+            client.getEigenschappen(
+                eq(plugin.authenticationPluginConfiguration),
+                eq(plugin.url),
+                eq(
+                    EigenschapRequest(
+                        zaaktype = zaaktypeUrl.toURI(),
+                        zaaktypeIdentificatie = "ZAAKTYPE-1",
+                        datumGeldigheid = datumGeldigheid,
+                        status = ZaakTypePublishedStatus.CONCEPT,
+                        pageSize = 50,
+                        page = 2
+                    )
+                )
+            )
+        ).thenReturn(
+            Page(
+                count = 1,
+                results = listOf(
+                    Eigenschap(
+                        eigenschapUrl("1").toURI(),
+                        "Einddatum",
+                        "De einddatum van de zaak",
+                        Specificatie("groep", "tekst", "lengte", "1:N", listOf("ja", "nee")),
+                        "toelichting",
+                        zaaktypeUrl.toURI()
+                    )
+                )
+            )
+        )
+
+        // when
+        plugin.getEigenschappenFromZaaktype(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeIdentificatie = "ZAAKTYPE-1",
+            datumGeldigheid = datumGeldigheid,
+            status = "concept",
+            pageSize = 50,
+            page = 2
+        )
+
+        // then
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf(
+                        "url" to eigenschapUrl("1"),
+                        "name" to "Einddatum",
+                        "definitie" to "De einddatum van de zaak",
+                        "toelichting" to "toelichting",
+                        "zaaktype" to zaaktypeUrl,
+                        "groep" to "groep",
+                        "formaat" to "tekst",
+                        "lengte" to "lengte",
+                        "kardinaliteit" to "1:N",
+                        "waardenverzameling" to listOf("ja", "nee")
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should get eigenschappen for the zaaktype of the linked zaak when no extra filters are given`() {
+        // given
+        val processVariable = "eigenschappenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        whenever(
+            client.getEigenschappen(
+                eq(plugin.authenticationPluginConfiguration),
+                eq(plugin.url),
+                eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI()))
+            )
+        ).thenReturn(
+            Page(
+                count = 1,
+                results = listOf(
+                    Eigenschap(
+                        eigenschapUrl("1").toURI(),
+                        "Einddatum",
+                        "De einddatum van de zaak",
+                        Specificatie(null, "tekst", "lengte", "1:N", null),
+                        null,
+                        zaaktypeUrl.toURI()
+                    )
+                )
+            )
+        )
+
+        // when
+        plugin.getEigenschappenFromZaaktype(
+            execution = execution,
+            processVariable = processVariable
+        )
+
+        // then
+        verify(client, times(1)).getEigenschappen(
+            any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI()))
+        )
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf(
+                        "url" to eigenschapUrl("1"),
+                        "name" to "Einddatum",
+                        "definitie" to "De einddatum van de zaak",
+                        "toelichting" to null,
+                        "zaaktype" to zaaktypeUrl,
+                        "groep" to null,
+                        "formaat" to "tekst",
+                        "lengte" to "lengte",
+                        "kardinaliteit" to "1:N",
+                        "waardenverzameling" to null
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `should only get a single page of eigenschappen even when a next page is available`() {
+        // given
+        val processVariable = "eigenschappenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
+        whenever(
+            client.getEigenschappen(any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI())))
+        ).thenReturn(
+            Page(
+                count = 2,
+                next = URI("https://example.com/eigenschappen?page=2"),
+                results = listOf(
+                    Eigenschap(
+                        eigenschapUrl("1").toURI(),
+                        "first eigenschap",
+                        "first",
+                        Specificatie(null, "tekst", "lengte", "1:N", null),
+                        null,
+                        zaaktypeUrl.toURI()
+                    )
+                )
+            )
+        )
+
+        // when
+        plugin.getEigenschappenFromZaaktype(
+            execution = execution,
+            processVariable = processVariable
+        )
+
+        // then
+        verify(client, times(1)).getEigenschappen(any(), any(), any())
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    mapOf(
+                        "url" to eigenschapUrl("1"),
+                        "name" to "first eigenschap",
+                        "definitie" to "first",
+                        "toelichting" to null,
+                        "zaaktype" to zaaktypeUrl,
+                        "groep" to null,
+                        "formaat" to "tekst",
+                        "lengte" to "lengte",
+                        "kardinaliteit" to "1:N",
+                        "waardenverzameling" to null
+                    )
+                )
+            )
+        )
     }
 
     @Test

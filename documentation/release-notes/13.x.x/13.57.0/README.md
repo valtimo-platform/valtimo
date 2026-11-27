@@ -6,9 +6,11 @@ Release date: 02-12-2026
 
 ## New Features
 
-### New feature title
+### Zaakeigenschappen from the Zaken API
 
-New feature explanation.
+A new Zaken API plugin action makes the zaakeigenschappen of a zaak available to a process:
+
+- **Get zaakeigenschappen** stores every zaakeigenschap of the zaak that matches a given property URL and/or name in a process variable. Leaving both empty returns every zaakeigenschap of the zaak.
 
 ---
 

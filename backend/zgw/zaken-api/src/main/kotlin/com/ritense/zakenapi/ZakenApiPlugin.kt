@@ -31,7 +31,6 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.resource.service.TemporaryResourceStorageService
@@ -1248,6 +1247,39 @@ class ZakenApiPlugin(
             client.createZaakeigenschap(authenticationPluginConfiguration, url, request)
             logger.info { "Zaakeigenschap with URL '$eigenschapUrl' created for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
         }
+    }
+
+    @PluginAction(
+        key = "get-zaakeigenschappen",
+        title = "get zaakeigenschappen",
+        description = "get zaakeigenschappen by eigenschapURL or eigenschapName for a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getZaakeigenschappen(
+        execution: DelegateExecution,
+        @PluginActionProperty eigenschapUrl: URI?,
+        @PluginActionProperty eigenschapNaam: String?,
+        @PluginActionProperty resultProcessVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.EIGENSCHAP to eigenschapUrl.toString(),
+        ) {
+            logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' and or name '${eigenschapNaam}' for document with id '${execution.businessKey}'" }
+            val documentId = execution.getJsonSchemaDocumentId()
+            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+            val zaakeigenschappen = findZaakeigenschappen(zaakUrl, eigenschapUrl, eigenschapNaam)
+            execution.setVariable(resultProcessVariable, objectMapper.convertValue(zaakeigenschappen))
+        }
+    }
+
+    private fun findZaakeigenschappen(
+        zaakUrl: URI,
+        eigenschapUrl: URI?,
+        eigenschapNaam: String?,
+    ): List<ZaakeigenschapResponse> {
+        return client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+            .filter { eigenschapUrl == null || eigenschapUrl.toString().isEmpty() || it.eigenschap == eigenschapUrl }
+            .filter { eigenschapNaam.isNullOrEmpty() || it.naam == eigenschapNaam }
     }
 
     @PluginAction(

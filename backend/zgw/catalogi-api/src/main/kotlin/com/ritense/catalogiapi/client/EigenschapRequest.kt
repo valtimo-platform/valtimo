@@ -17,9 +17,13 @@
 package com.ritense.catalogiapi.client
 
 import java.net.URI
+import java.time.LocalDate
 
 data class EigenschapRequest(
     val zaaktype: URI? = null,
+    val zaaktypeIdentificatie: String? = null,
+    val datumGeldigheid: LocalDate? = null,
     val status: ZaakTypePublishedStatus? = null,
+    val pageSize: Int? = null,
     val page: Int? = null
 )

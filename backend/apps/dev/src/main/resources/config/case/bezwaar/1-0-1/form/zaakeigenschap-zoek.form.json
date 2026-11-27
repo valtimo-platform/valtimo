@@ -1,0 +1,73 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "zaaktypeEigenschappenContainer",
+            "type": "hidden",
+            "input": true,
+            "persistent": "client-only",
+            "label": "Zaaktype eigenschappen container",
+            "properties": {
+                "sourceKey": "pv:zaaktypeEigenschappen"
+            }
+        },
+        {
+            "key": "pv:eigenschapUrl",
+            "type": "select",
+            "input": true,
+            "label": "Eigenschap op url",
+            "dataSrc": "custom",
+            "data": {
+                "custom": "values = data['zaaktypeEigenschappenContainer'];"
+            },
+            "widget": "choicesjs",
+            "template": "<span>{{ item.definitie }} url-> {{ item.url }}</span>",
+            "valueProperty": "url",
+            "idPath": "url",
+            "validate": {
+                "required": false
+            }
+        },
+        {
+            "key": "pv:eigenschapNaam",
+            "type": "select",
+            "input": true,
+            "label": "Eigenschap naam",
+            "dataSrc": "custom",
+            "data": {
+                "custom": "values = data['zaaktypeEigenschappenContainer'];"
+            },
+            "widget": "choicesjs",
+            "template": "<span>{{ item.definitie }}</span>",
+            "valueProperty": "name",
+            "idPath": "name",
+            "validate": {
+                "required": false
+            }
+        },
+        {
+            "key": "pv:resultProcessVariable",
+            "type": "textfield",
+            "input": true,
+            "label": "result proces variabele",
+            "validate": {
+                "required": true
+            },
+            "tableView": true,
+            "attributes": {
+                "data-testid": "zaakeigenschap-zoek-pv-resultProcessVariable"
+            },
+            "autoExpand": false,
+            "applyMaskOn": "change",
+            "defaultValue": "zaakeigenschapResultaat"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

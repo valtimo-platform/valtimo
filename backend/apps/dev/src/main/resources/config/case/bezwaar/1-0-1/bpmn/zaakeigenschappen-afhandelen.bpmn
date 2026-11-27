@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:operaton="http://operaton.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+  <bpmn:collaboration id="Collaboration_0r27tgf">
+    <bpmn:participant id="Participant_1ni6trr" name="zaakeigenschappen afhandelen" processRef="zaakeigenschappen-afhandelen" />
+  </bpmn:collaboration>
+  <bpmn:process id="zaakeigenschappen-afhandelen" name="zaakeigenschappen afhandelen" processType="None" isClosed="false" isExecutable="true" operaton:versionTag="CD:bezwaar:1.0.1">
+    <bpmn:startEvent id="zaakeigenschap-actie" name="start">
+      <bpmn:outgoing>Flow_1rynk1r</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="haal-eigenschappen-van-zaaktype-op-st" name="Haal eigenschappen van zaaktype op" camunda:expression="${true}">
+      <bpmn:incoming>Flow_1rynk1r</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dvpf3s</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1rsillr" default="Flow_0q037r3">
+      <bpmn:incoming>Flow_1dvpf3s</bpmn:incoming>
+      <bpmn:outgoing>Flow_0q037r3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0q59y5h</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="zaakeigenschap-creeer" name="Vul eigenschappen formulier">
+      <bpmn:incoming>Flow_0q037r3</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ndvnoh</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="zaakeigenschap-zoek" name="zoek op eigenschappen">
+      <bpmn:incoming>Flow_0q59y5h</bpmn:incoming>
+      <bpmn:outgoing>Flow_0njrlgn</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="zaakeigenschap-zoeken-st" name="Zoek op zaak eigenschappen">
+      <bpmn:extensionElements>
+        <camunda:executionListener event="end">
+          <camunda:script scriptFormat="javascript">function toJs(value) {   if (value === null || value === undefined) {     return null;   }   if (typeof value !== 'object') {     return value;   }   if (typeof value.entrySet === 'function') {     var result = {};     var iterator = value.entrySet().iterator();     while (iterator.hasNext()) {       var entry = iterator.next();       result[String(entry.getKey())] = toJs(entry.getValue());     }     return result;   }   if (typeof value.size === 'function' &amp;&amp; typeof value.get === 'function') {     var list = [];     for (var i = 0; i &lt; value.size(); i++) {       list.push(toJs(value.get(i)));     }     return list;   }   return String(value); } execution.setVariable('eigenschappenResultJson', JSON.stringify(toJs(execution.getVariable(execution.getVariable('eigenschappenResultPV')), null, 2)));</camunda:script>
+        </camunda:executionListener>
+        <camunda:executionListener expression="${execution.setVariable(&#39;eigenschappenResultPV&#39;, execution.getVariable(&#39;resultProcessVariable&#39;))}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0njrlgn</bpmn:incoming>
+      <bpmn:outgoing>Flow_14vrqzb</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="zaakeigenschap-toon-resultaat" name="Toon zaakeigenschap">
+      <bpmn:incoming>Flow_14vrqzb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uyvfdt</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_12aogxw">
+      <bpmn:incoming>Flow_1ojjoqv</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_05ghhg1">
+      <bpmn:incoming>Flow_1uyvfdt</bpmn:incoming>
+      <bpmn:incoming>Flow_1qx4t82</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ojjoqv</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="zaakeigenschap-creeer-st" name="maak zaak eigenschap aan" implementation="##WebService" camunda:expression="${true}" operaton:asyncAfter="true" operaton:expression="${null}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0ndvnoh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qx4t82</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1rynk1r" sourceRef="zaakeigenschap-actie" targetRef="haal-eigenschappen-van-zaaktype-op-st" />
+    <bpmn:sequenceFlow id="Flow_1dvpf3s" sourceRef="haal-eigenschappen-van-zaaktype-op-st" targetRef="Gateway_1rsillr" />
+    <bpmn:sequenceFlow id="Flow_0q037r3" sourceRef="Gateway_1rsillr" targetRef="zaakeigenschap-creeer" />
+    <bpmn:sequenceFlow id="Flow_0q59y5h" sourceRef="Gateway_1rsillr" targetRef="zaakeigenschap-zoek">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.hasVariable('zaakeigenschap-actie') &amp;&amp; execution.getVariable('zaakeigenschap-actie') != null &amp;&amp; execution.getVariable('zaakeigenschap-actie') == 'ZOEK_ZAAKEIGENSCHAPPEN'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0ndvnoh" sourceRef="zaakeigenschap-creeer" targetRef="zaakeigenschap-creeer-st" />
+    <bpmn:sequenceFlow id="Flow_0njrlgn" sourceRef="zaakeigenschap-zoek" targetRef="zaakeigenschap-zoeken-st" />
+    <bpmn:sequenceFlow id="Flow_14vrqzb" sourceRef="zaakeigenschap-zoeken-st" targetRef="zaakeigenschap-toon-resultaat" />
+    <bpmn:sequenceFlow id="Flow_1uyvfdt" sourceRef="zaakeigenschap-toon-resultaat" targetRef="Gateway_05ghhg1" />
+    <bpmn:sequenceFlow id="Flow_1ojjoqv" sourceRef="Gateway_05ghhg1" targetRef="Event_12aogxw" />
+    <bpmn:sequenceFlow id="Flow_1qx4t82" sourceRef="zaakeigenschap-creeer-st" targetRef="Gateway_05ghhg1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0r27tgf">
+      <bpmndi:BPMNShape id="Participant_1ni6trr_di" bpmnElement="Participant_1ni6trr" isHorizontal="true">
+        <dc:Bounds x="165" y="80" width="1085" height="370" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="zaakeigenschap-actie">
+        <dc:Bounds x="258" y="183" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="265" y="226" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_13mnky8" bpmnElement="haal-eigenschappen-van-zaaktype-op-st">
+        <dc:Bounds x="350" y="161" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1rsillr_di" bpmnElement="Gateway_1rsillr" isMarkerVisible="true">
+        <dc:Bounds x="495" y="176" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05vmr6e_di" bpmnElement="zaakeigenschap-creeer">
+        <dc:Bounds x="590" y="301" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0k71x21" bpmnElement="zaakeigenschap-zoek">
+        <dc:Bounds x="590" y="161" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0xcjmfy" bpmnElement="zaakeigenschap-zoeken-st">
+        <dc:Bounds x="740" y="161" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_042msrl_di" bpmnElement="zaakeigenschap-toon-resultaat">
+        <dc:Bounds x="890" y="161" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_12aogxw_di" bpmnElement="Event_12aogxw">
+        <dc:Bounds x="1112" y="183" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_05ghhg1_di" bpmnElement="Gateway_05ghhg1" isMarkerVisible="true">
+        <dc:Bounds x="1035" y="176" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07e2ixs_di" bpmnElement="zaakeigenschap-creeer-st">
+        <dc:Bounds x="740" y="301" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1rynk1r_di" bpmnElement="Flow_1rynk1r">
+        <di:waypoint x="294" y="201" />
+        <di:waypoint x="350" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q037r3_di" bpmnElement="Flow_0q037r3">
+        <di:waypoint x="520" y="226" />
+        <di:waypoint x="520" y="341" />
+        <di:waypoint x="590" y="341" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="493" y="172" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ndvnoh_di" bpmnElement="Flow_0ndvnoh">
+        <di:waypoint x="690" y="341" />
+        <di:waypoint x="740" y="341" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q59y5h_di" bpmnElement="Flow_0q59y5h">
+        <di:waypoint x="545" y="201" />
+        <di:waypoint x="590" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uyvfdt_di" bpmnElement="Flow_1uyvfdt">
+        <di:waypoint x="990" y="201" />
+        <di:waypoint x="1035" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14vrqzb_di" bpmnElement="Flow_14vrqzb">
+        <di:waypoint x="840" y="201" />
+        <di:waypoint x="890" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0njrlgn_di" bpmnElement="Flow_0njrlgn">
+        <di:waypoint x="690" y="201" />
+        <di:waypoint x="740" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dvpf3s_di" bpmnElement="Flow_1dvpf3s">
+        <di:waypoint x="450" y="201" />
+        <di:waypoint x="495" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ojjoqv_di" bpmnElement="Flow_1ojjoqv">
+        <di:waypoint x="1085" y="201" />
+        <di:waypoint x="1112" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qx4t82_di" bpmnElement="Flow_1qx4t82">
+        <di:waypoint x="840" y="341" />
+        <di:waypoint x="1060" y="341" />
+        <di:waypoint x="1060" y="226" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
