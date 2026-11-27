@@ -1,0 +1,32 @@
+{
+  "status" : 409,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "title" : "Plugin configuration is in use",
+    "status" : 409,
+    "detail" : "One or more BPMN process links reference this plugin configuration. Remove the references before deleting the configuration.",
+    "configurationId" : "<uuid>",
+    "usages" : [ {
+      "configurationId" : "<uuid>",
+      "configurationTitle" : "Golden configuration",
+      "parentType" : "CASE",
+      "parentKey" : "house",
+      "parentVersionTag" : "1.0.0",
+      "processDefinitionId" : null,
+      "processDefinitionKey" : "golden-process",
+      "processDefinitionName" : null,
+      "activityId" : "task1",
+      "activityName" : null,
+      "processLinkId" : null,
+      "tabKey" : null,
+      "tabName" : null,
+      "buildingBlockKey" : null,
+      "widgetKey" : null,
+      "menuItemTitle" : null,
+      "contract" : null,
+      "contractJobId" : null,
+      "relatedConfigurationId" : null,
+      "relatedConfigurationTitle" : null
+    } ]
+  }
+}

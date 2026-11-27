@@ -1,0 +1,12 @@
+{
+  "status" : 415,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Unsupported Media Type",
+    "status" : 415,
+    "path" : "/api/test/error-golden/xml-only",
+    "message" : "error.http.415",
+    "referenceId" : "<uuid>"
+  }
+}

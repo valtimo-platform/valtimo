@@ -1,0 +1,12 @@
+{
+  "status" : 504,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Gateway Timeout",
+    "status" : 504,
+    "path" : "/api/test/error-golden/socket-timeout",
+    "message" : "error.http.504",
+    "referenceId" : "<uuid>"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status" : 409,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "status" : 409,
+    "path" : "/api/test/error-golden/concurrency",
+    "message" : "error.concurrencyFailure",
+    "referenceId" : "<uuid>"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 422,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Cannot process this",
+    "status" : 422,
+    "path" : "/api/test/error-golden/response-status-annotation",
+    "message" : "error.http.422",
+    "referenceId" : "<uuid>"
+  }
+}

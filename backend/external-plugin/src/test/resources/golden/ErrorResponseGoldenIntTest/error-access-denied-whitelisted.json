@@ -1,0 +1,13 @@
+{
+  "status" : 403,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "status" : 403,
+    "detail" : "No access to this",
+    "path" : "/api/test/error-golden/access-denied",
+    "message" : "error.accessDenied",
+    "reason-not-sanitized" : "IP address is whitelisted: 127.0.0.1",
+    "stack-trace" : "<ignored:array>"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status" : 405,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "status" : 405,
+    "path" : "/api/test/error-golden/internal",
+    "message" : "error.methodNotSupported",
+    "referenceId" : "<uuid>"
+  }
+}

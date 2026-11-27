@@ -1,0 +1,12 @@
+{
+  "status" : 501,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Not Implemented",
+    "status" : 501,
+    "path" : "/api/test/error-golden/unsupported-operation",
+    "message" : "error.http.501",
+    "referenceId" : "<uuid>"
+  }
+}

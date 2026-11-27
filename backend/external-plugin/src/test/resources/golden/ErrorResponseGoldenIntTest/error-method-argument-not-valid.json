@@ -1,0 +1,13 @@
+{
+  "status" : 400,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/constraint-violation",
+    "title" : "Method argument not valid",
+    "status" : 400,
+    "path" : "/api/test/error-golden/method-argument",
+    "message" : "error.validation",
+    "errors" : [ "goldenBean.name: must not be null" ],
+    "referenceId" : "<uuid>"
+  }
+}

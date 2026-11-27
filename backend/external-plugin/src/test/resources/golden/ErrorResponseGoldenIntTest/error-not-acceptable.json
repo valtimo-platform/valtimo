@@ -1,0 +1,12 @@
+{
+  "status" : 406,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Not Acceptable",
+    "status" : 406,
+    "path" : "/api/test/error-golden/csv-only",
+    "message" : "error.http.406",
+    "referenceId" : "<uuid>"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status" : 403,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "status" : 403,
+    "path" : "/api/test/error-golden/access-denied",
+    "message" : "error.accessDenied",
+    "referenceId" : "<uuid>"
+  }
+}

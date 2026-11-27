@@ -1,0 +1,14 @@
+{
+  "status" : 500,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Internal Server Error",
+    "status" : 500,
+    "detail" : "Something broke",
+    "path" : "/api/test/error-golden/internal",
+    "message" : "error.http.500",
+    "reason-not-sanitized" : "IP address is whitelisted: 127.0.0.1",
+    "stack-trace" : "<ignored:array>"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "status" : 400,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "https://zalando.github.io/problem/constraint-violation",
+    "title" : "Constraint Violation",
+    "status" : 400,
+    "path" : "/api/test/error-golden/constraint-violation",
+    "errors" : [ "code: size must be between 1 and 10", "name: must not be null" ],
+    "message" : "error.validation",
+    "referenceId" : "<uuid>"
+  }
+}

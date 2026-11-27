@@ -1,0 +1,15 @@
+{
+  "status" : 409,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "title" : "Form definition is in use",
+    "status" : 409,
+    "detail" : "This form definition is used by process links: 'Golden process' (activity 'task1'). Remove the references before deleting the form definition.",
+    "formDefinitionId" : "<uuid>",
+    "usages" : [ {
+      "processDefinitionKey" : "golden-process",
+      "processDefinitionName" : "Golden process",
+      "activityId" : "task1"
+    } ]
+  }
+}

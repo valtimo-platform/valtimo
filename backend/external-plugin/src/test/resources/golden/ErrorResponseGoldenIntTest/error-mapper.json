@@ -1,0 +1,11 @@
+{
+  "status" : 400,
+  "contentType" : "application/json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Mapped failure",
+    "status" : 400,
+    "message" : "error.validationException",
+    "params" : "Mapped failure"
+  }
+}

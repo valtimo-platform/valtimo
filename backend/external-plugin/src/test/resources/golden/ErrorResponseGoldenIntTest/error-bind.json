@@ -1,0 +1,13 @@
+{
+  "status" : 400,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "https://zalando.github.io/problem/constraint-violation",
+    "title" : "Constraint Violation",
+    "status" : 400,
+    "path" : "/api/test/error-golden/bind",
+    "errors" : [ "goldenBean: bean is not valid", "name: size must be between 1 and 10" ],
+    "message" : "error.validation",
+    "referenceId" : "<uuid>"
+  }
+}
