@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Timer start events create a case
 
-New enhancement explanation.
+A process with a timer start event, linked to a case definition with **Process creates new case** on, now creates a new, empty case every time the timer fires. Before, only the process started, and the first step that needed a case failed.
 
 ---
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_timer-start-process-without-case" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="timer-start-process-without-case" name="Timer start process without case" isExecutable="true">
+    <bpmn:startEvent id="timer-start-event">
+      <bpmn:outgoing>flow-1</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="timer-start-event-definition">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2149-12-31T23:59:59Z</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="get-case-version" name="Get case version" camunda:expression="${documentDelegateService.getDocumentVersion(execution)}">
+      <bpmn:incoming>flow-1</bpmn:incoming>
+      <bpmn:outgoing>flow-2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="wait-task" name="Wait">
+      <bpmn:incoming>flow-2</bpmn:incoming>
+      <bpmn:outgoing>flow-3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="end-event">
+      <bpmn:incoming>flow-3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="flow-1" sourceRef="timer-start-event" targetRef="get-case-version" />
+    <bpmn:sequenceFlow id="flow-2" sourceRef="get-case-version" targetRef="wait-task" />
+    <bpmn:sequenceFlow id="flow-3" sourceRef="wait-task" targetRef="end-event" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="diagram">
+    <bpmndi:BPMNPlane id="plane" bpmnElement="timer-start-process-without-case">
+      <bpmndi:BPMNShape id="timer-start-event_di" bpmnElement="timer-start-event"><dc:Bounds x="152" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="get-case-version_di" bpmnElement="get-case-version"><dc:Bounds x="240" y="80" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="wait-task_di" bpmnElement="wait-task"><dc:Bounds x="390" y="80" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end-event_di" bpmnElement="end-event"><dc:Bounds x="542" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="flow-1_di" bpmnElement="flow-1"><di:waypoint x="188" y="120" /><di:waypoint x="240" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow-2_di" bpmnElement="flow-2"><di:waypoint x="340" y="120" /><di:waypoint x="390" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow-3_di" bpmnElement="flow-3"><di:waypoint x="490" y="120" /><di:waypoint x="542" y="120" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

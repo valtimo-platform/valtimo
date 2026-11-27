@@ -22,6 +22,7 @@ import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.DocumentCaseDefinitionPredicateProvider
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.impl.delegate.DocumentDelegate
@@ -35,6 +36,7 @@ import com.ritense.processdocument.listener.CaseTaskTeamAutoAssignListener
 import com.ritense.processdocument.listener.DecisionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDefinitionCaseEventListener
 import com.ritense.processdocument.listener.ProcessDocumentLinkEventListener
+import com.ritense.processdocument.listener.TimerStartEventCaseListener
 import com.ritense.processdocument.operaton.authorization.OperatonTaskDocumentMapper
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
@@ -241,6 +243,22 @@ class ProcessDocumentsAutoConfiguration {
             userManagementService,
             caseDocumentResolver,
             authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TimerStartEventCaseListener::class)
+    fun timerStartEventCaseListener(
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        documentDefinitionService: DocumentDefinitionService,
+        processDocumentService: ProcessDocumentService,
+        objectMapper: ObjectMapper,
+    ): TimerStartEventCaseListener {
+        return TimerStartEventCaseListener(
+            processDefinitionCaseDefinitionService,
+            documentDefinitionService,
+            processDocumentService,
+            objectMapper
         )
     }
 

@@ -43,5 +43,15 @@
         "processDefinitionKey" : "delete-processes",
         "canInitializeDocument" : true,
         "startableByUser" : true
+    },
+    {
+        "processDefinitionKey" : "timer-start-process",
+        "canInitializeDocument" : true,
+        "startableByUser" : false
+    },
+    {
+        "processDefinitionKey" : "timer-start-process-without-case",
+        "canInitializeDocument" : false,
+        "startableByUser" : false
     }
 ]
