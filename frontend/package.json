@@ -233,7 +233,7 @@
     "@carbon/icons": "11.59.0",
     "@carbon/styles": "1.80.0",
     "@carbon/themes": "11.51.0",
-    "@epistola.app/valtimo-plugin": "0.21.0",
+    "@epistola.app/valtimo-plugin": "1.0.4",
     "@floating-ui/dom": "1.7.4",
     "@formio/angular": "7.0.0",
     "@foxythemes/bootstrap-datetime-picker-bs4": "2.3.5",
